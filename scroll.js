@@ -111,8 +111,6 @@
 
       var activeElement = getActiveScrollElement();
 
-      document.title = activeElement.tagName;
-
       if (!scrollActive) {
         scrollActive = true;
         scrollRealVelocity[axis2key(e.axis)] = 0.0;
