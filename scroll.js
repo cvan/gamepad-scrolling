@@ -10,8 +10,14 @@
     back: 9,
     forward: 10
   };
-  var x = mapping.axisX;
-  var y = mapping.axisY;
+
+  function axis2key(axis) {
+    if (axis === mapping.axisX) {
+      return 'x';
+    } else if (axis === mapping.axisY) {
+      return 'y';
+    }
+  }
 
   var AXIS_THRESHOLD = 0.15;
   var SCROLLING_SMOOTHING_FACTOR = 0.4;
@@ -19,27 +25,25 @@
 
   var scrollActive = false;
   var scrollOffset = {};
-  var scrollRealVelocity = {};
-  scrollRealVelocity[x] = 0.0;
-  scrollRealVelocity[y] = 0.0;
+  var scrollRealVelocity = {x: 0.0, y: 0.0};
   var scrollTime = null;
   var scrollTimeSinceLastUpdate = null;
   var scrollTimeSinceScrollStart = null;
   var scrollTimeStart = null;
-  var scrollVelocity = {};
+  var scrollVelocity = {x: 0.0, y: 0.0};
   var scrollVelocitySpeed = null;
   var scrollWarp = 1;
 
   function scroll() {
     scrollTimeSinceLastUpdate = Date.now() - scrollTime;
 
-    scrollWarp = 1;
-
     // Trigger hyperscrolling when the stick is held down for a while.
     scrollVelocitySpeed = Math.sqrt(
-      scrollRealVelocity[x] * scrollRealVelocity[x] +
-      scrollRealVelocity[y] * scrollRealVelocity[y]
+      scrollRealVelocity.x * scrollRealVelocity.x +
+      scrollRealVelocity.y * scrollRealVelocity.y
     );
+
+    scrollWarp = 1;
 
     if (scrollVelocitySpeed > 0.8) {
       scrollTimeSinceScrollStart = Date.now() - scrollTimeStart;
@@ -51,20 +55,20 @@
     }
 
     // We give it some smooth easing in and a subtle easing out.
-    scrollRealVelocity[x] = (
-      scrollWarp * scrollVelocity[x] * SCROLLING_SMOOTHING_FACTOR +
-      scrollRealVelocity[x] * (1 - SCROLLING_SMOOTHING_FACTOR)
+    scrollRealVelocity.x = (
+      scrollWarp * scrollVelocity.x * SCROLLING_SMOOTHING_FACTOR +
+      scrollRealVelocity.x * (1 - SCROLLING_SMOOTHING_FACTOR)
     );
-    scrollRealVelocity[y] = (
-      scrollWarp * scrollVelocity[y] * SCROLLING_SMOOTHING_FACTOR +
-      scrollRealVelocity[y] * (1 - SCROLLING_SMOOTHING_FACTOR)
+    scrollRealVelocity.y = (
+      scrollWarp * scrollVelocity.y * SCROLLING_SMOOTHING_FACTOR +
+      scrollRealVelocity.y * (1 - SCROLLING_SMOOTHING_FACTOR)
     );
 
-    scrollOffset[x] += scrollRealVelocity[x] * scrollTimeSinceLastUpdate;
-    scrollOffset[y] += scrollRealVelocity[y] * scrollTimeSinceLastUpdate;
+    scrollOffset.x += scrollRealVelocity.x * scrollTimeSinceLastUpdate;
+    scrollOffset.y += scrollRealVelocity.y * scrollTimeSinceLastUpdate;
 
-    document.documentElement.scrollLeft = Math.round(scrollOffset[x]);
-    document.documentElement.scrollTop = Math.round(scrollOffset[y]);
+    document.documentElement.scrollLeft = Math.round(scrollOffset.x);
+    document.documentElement.scrollTop = Math.round(scrollOffset.y);
 
     scrollTime = Date.now();
 
@@ -86,7 +90,7 @@
     if (Math.abs(e.value) < AXIS_THRESHOLD) {
       if (e.axis === mapping.axisX || e.axis === mapping.axisY) {
         scrollActive = false;
-        scrollVelocity[e.axis] = 0;
+        scrollVelocity[axis2key(e.axis)] = 0;
       }
       return;
     }
@@ -95,13 +99,13 @@
       e.gamepad.index, e.gamepad.id, e.axis, e.value);
 
     if (e.axis === mapping.axisX || e.axis === mapping.axisY) {
-      scrollVelocity[e.axis] = e.value;
+      scrollVelocity[axis2key(e.axis)] = e.value;
 
       if (!scrollActive) {
         scrollActive = true;
-        scrollRealVelocity[e.axis] = 0.0;
-        scrollOffset[x] = document.documentElement.scrollLeft;
-        scrollOffset[y] = document.documentElement.scrollTop;
+        scrollRealVelocity[axis2key(e.axis)] = 0.0;
+        scrollOffset.x = document.documentElement.scrollLeft;
+        scrollOffset.y = document.documentElement.scrollTop;
         scrollTimeStart = Date.now();
         scrollTime = Date.now();
 
