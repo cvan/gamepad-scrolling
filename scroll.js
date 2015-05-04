@@ -1,4 +1,4 @@
-(function () {
+(function (window) {
   // This works only with Xbox controller mapping and Firefox with
   // nonstandard gamepad events flipped on
   // (`dom.gamepad.non_standard_events.enabled` in `about:config`).
@@ -10,67 +10,66 @@
     back: 9,
     forward: 10
   };
+  var x = mapping.axisX;
+  var y = mapping.axisY;
 
   var AXIS_THRESHOLD = 0.15;
   var SCROLLING_SMOOTHING_FACTOR = 0.4;
   var SCROLLING_VELOCITY_THRESHOLD = 0.05;
 
-  var scrollLoop = {};
-  scrollLoop[mapping.axisX] = function () {
-    scroll(mapping.axisX);
-  };
-  scrollLoop[mapping.axisY] = function () {
-    scroll(mapping.axisY);
-  };
-
-  var scrollActive = {};
-  var scrollRealVelocity = {};
-  var scrollTime = {};
-  var scrollTimeSinceLastUpdate = {};
-  var scrollTimeSinceScrollStart = {};
-  var scrollTimeStart = {};
+  var scrollActive = false;
   var scrollOffset = {};
+  var scrollRealVelocity = {};
+  scrollRealVelocity[x] = 0.0;
+  scrollRealVelocity[y] = 0.0;
+  var scrollTime = null;
+  var scrollTimeSinceLastUpdate = null;
+  var scrollTimeSinceScrollStart = null;
+  var scrollTimeStart = null;
   var scrollVelocity = {};
+  var scrollVelocitySpeed = null;
   var scrollWarp = 1;
 
-  function scroll(axis) {
-    scrollTimeSinceLastUpdate[axis] = Date.now() - scrollTime[axis];
+  function scroll() {
+    scrollTimeSinceLastUpdate = Date.now() - scrollTime;
 
     scrollWarp = 1;
 
     // Trigger hyperscrolling when the stick is held down for a while.
-    var sqrt = Math.sqrt(
-      scrollRealVelocity[mapping.axisX] * scrollRealVelocity[mapping.axisX] +
-      scrollRealVelocity[mapping.axisY] * scrollRealVelocity[mapping.axisY]
+    scrollVelocitySpeed = Math.sqrt(
+      scrollRealVelocity[x] * scrollRealVelocity[x] +
+      scrollRealVelocity[y] * scrollRealVelocity[y]
     );
 
-    if (sqrt > 0.8) {
-      scrollTimeSinceScrollStart[axis] = Date.now() - scrollTimeStart[axis];
-      if (scrollTimeSinceScrollStart[axis] > 3000) {
+    if (scrollVelocitySpeed > 0.8) {
+      scrollTimeSinceScrollStart = Date.now() - scrollTimeStart;
+      if (scrollTimeSinceScrollStart > 3000) {
         scrollWarp = 5;
-      } else if (scrollTimeSinceScrollStart[axis] > 1500) {
+      } else if (scrollTimeSinceScrollStart > 1500) {
         scrollWarp = 2;
       }
     }
 
     // We give it some smooth easing in and a subtle easing out.
-    scrollRealVelocity[axis] = (
-      scrollWarp * scrollVelocity[axis] * SCROLLING_SMOOTHING_FACTOR +
-      scrollRealVelocity[axis] * (1 - SCROLLING_SMOOTHING_FACTOR)
+    scrollRealVelocity[x] = (
+      scrollWarp * scrollVelocity[x] * SCROLLING_SMOOTHING_FACTOR +
+      scrollRealVelocity[x] * (1 - SCROLLING_SMOOTHING_FACTOR)
+    );
+    scrollRealVelocity[y] = (
+      scrollWarp * scrollVelocity[y] * SCROLLING_SMOOTHING_FACTOR +
+      scrollRealVelocity[y] * (1 - SCROLLING_SMOOTHING_FACTOR)
     );
 
-    scrollOffset[axis] += scrollRealVelocity[axis] * scrollTimeSinceLastUpdate[axis];
+    scrollOffset[x] += scrollRealVelocity[x] * scrollTimeSinceLastUpdate;
+    scrollOffset[y] += scrollRealVelocity[y] * scrollTimeSinceLastUpdate;
 
-    if (axis === mapping.axisX) {
-      document.documentElement.scrollLeft = Math.round(scrollOffset[axis]);
-    } else {
-      document.documentElement.scrollTop = Math.round(scrollOffset[axis]);
-    }
+    document.documentElement.scrollLeft = Math.round(scrollOffset[x]);
+    document.documentElement.scrollTop = Math.round(scrollOffset[y]);
 
-    scrollTime[axis] = Date.now();
+    scrollTime = Date.now();
 
-    if (scrollActive[axis] || Math.abs(scrollRealVelocity[axis]) > SCROLLING_VELOCITY_THRESHOLD) {
-      requestAnimationFrame(scrollLoop[axis]);
+    if (scrollActive || scrollVelocitySpeed > SCROLLING_VELOCITY_THRESHOLD) {
+      requestAnimationFrame(scroll);
     }
   }
 
@@ -86,7 +85,7 @@
   window.addEventListener('gamepadaxismove', function (e) {
     if (Math.abs(e.value) < AXIS_THRESHOLD) {
       if (e.axis === mapping.axisX || e.axis === mapping.axisY) {
-        scrollActive[e.axis] = false;
+        scrollActive = false;
         scrollVelocity[e.axis] = 0;
       }
       return;
@@ -98,14 +97,15 @@
     if (e.axis === mapping.axisX || e.axis === mapping.axisY) {
       scrollVelocity[e.axis] = e.value;
 
-      if (!scrollActive[e.axis]) {
-        scrollActive[e.axis] = true;
+      if (!scrollActive) {
+        scrollActive = true;
         scrollRealVelocity[e.axis] = 0.0;
-        scrollOffset[e.axis] = e.axis === mapping.axisX ? document.documentElement.scrollLeft : document.documentElement.scrollTop;
-        scrollTimeStart[e.axis] = Date.now();
-        scrollTime[e.axis] = Date.now();
+        scrollOffset[x] = document.documentElement.scrollLeft;
+        scrollOffset[y] = document.documentElement.scrollTop;
+        scrollTimeStart = Date.now();
+        scrollTime = Date.now();
 
-        scroll(e.axis);
+        scroll();
       }
     }
   });
