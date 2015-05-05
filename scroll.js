@@ -11,13 +11,19 @@
     forward: 10
   };
 
-  function axis2key(axis) {
+  var axis2key = function (axis) {
     if (axis === mapping.axisX) {
       return 'x';
     } else if (axis === mapping.axisY) {
       return 'y';
     }
-  }
+  };
+
+  var getActiveScrollElement = function (doc) {
+    doc = doc || document;
+    var el = doc.activeElement;
+    return el === doc.body ? doc.documentElement : el;
+  };
 
   var AXIS_THRESHOLD = 0.15;
   var SCROLLING_SMOOTHING_FACTOR = 0.4;
@@ -34,7 +40,7 @@
   var scrollVelocitySpeed = null;
   var scrollWarp = 1;
 
-  function scroll() {
+  var scroll = function () {
     scrollTimeSinceLastUpdate = Date.now() - scrollTime;
 
     // Trigger hyperscrolling when the stick is held down for a while.
@@ -67,15 +73,17 @@
     scrollOffset.x += scrollRealVelocity.x * scrollTimeSinceLastUpdate;
     scrollOffset.y += scrollRealVelocity.y * scrollTimeSinceLastUpdate;
 
-    document.documentElement.scrollLeft = Math.round(scrollOffset.x);
-    document.documentElement.scrollTop = Math.round(scrollOffset.y);
+    var activeElement = getActiveScrollElement();
+
+    activeElement.scrollLeft = Math.round(scrollOffset.x);
+    activeElement.scrollTop = Math.round(scrollOffset.y);
 
     scrollTime = Date.now();
 
     if (scrollActive || scrollVelocitySpeed > SCROLLING_VELOCITY_THRESHOLD) {
       requestAnimationFrame(scroll);
     }
-  }
+  };
 
   window.addEventListener('gamepadconnected', function (e) {
     console.log('Gamepad connected at index %d: %s. %d buttons, %d axes.',
@@ -101,11 +109,13 @@
     if (e.axis === mapping.axisX || e.axis === mapping.axisY) {
       scrollVelocity[axis2key(e.axis)] = e.value;
 
+      var activeElement = getActiveScrollElement();
+
       if (!scrollActive) {
         scrollActive = true;
         scrollRealVelocity[axis2key(e.axis)] = 0.0;
-        scrollOffset.x = document.documentElement.scrollLeft;
-        scrollOffset.y = document.documentElement.scrollTop;
+        scrollOffset.x = activeElement.scrollLeft;
+        scrollOffset.y = activeElement.scrollTop;
         scrollTimeStart = Date.now();
         scrollTime = Date.now();
 
