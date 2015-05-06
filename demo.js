@@ -18,8 +18,10 @@ exports.addEventListener('gamepaddisconnected', function (e) {
 exports.addEventListener('gamepadaxismove', function (e) {
   gscroll.onGamepadAxisMove(e);
 
-  console.log('Gamepad axis move at index %d: %s. Axis: %d. Value: %f.',
-    e.gamepad.index, e.gamepad.id, e.axis, e.value);
+  if (Math.abs(e.value) >= gscroll.AXIS_THRESHOLD) {
+    console.log('Gamepad axis move at index %d: %s. Axis: %d. Value: %f.',
+      e.gamepad.index, e.gamepad.id, e.axis, e.value);
+  }
 });
 
 exports.addEventListener('gamepadbuttondown', function (e) {
