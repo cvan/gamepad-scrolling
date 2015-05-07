@@ -5,6 +5,16 @@
     <title>Gamepad scrolling</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      html, body {
+        height: 100%;
+        width: 100%;
+      }
+
       html {
         font-size: 24px;
       }
@@ -13,9 +23,7 @@
         background: #f1f1f1;
         color: #333;
         font: 1rem/1.5 sans-serif;
-        margin: 0 auto;
-        padding: 2rem;
-        width: 2000px;
+        position: relative;
       }
 
       img {
@@ -25,7 +33,16 @@
 
       .scrollable {
         height: 200px;
+        width: 400px;
         overflow-y: auto;
+      }
+
+      .scrollable p {
+        width: 300%;
+      }
+
+      p {
+        margin: 1.5rem 0;
       }
     </style>
   </head>
@@ -221,6 +238,7 @@
 
     <p><a href="?swag"><big>Open a link</big></a></p>
 
+    <script src="lib/gcursor.js"></script>
     <script src="lib/gnav.js"></script>
     <script src="lib/gscroll.js"></script>
     <script src="demo.js"></script>
