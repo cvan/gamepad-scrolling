@@ -1,10 +1,16 @@
-/* globals gnav, gscroll */
+/* globals gcursor, gnav, gscroll */
 
 (function (exports) {
 
 'use strict';
 
-// Demo of navigation and scrolling via Gamepad.
+// Demo of cursor, navigation, and scrolling via Gamepad.
+
+[gcursor, gnav, gscroll].forEach(function (func) {
+  if (func.init) {
+    func.init();
+  }
+});
 
 exports.addEventListener('gamepadconnected', function (e) {
   console.log('Gamepad connected at index %d: %s. %d buttons, %d axes.',
@@ -16,6 +22,7 @@ exports.addEventListener('gamepaddisconnected', function (e) {
 });
 
 exports.addEventListener('gamepadaxismove', function (e) {
+  gcursor.onGamepadAxisMove(e);
   gscroll.onGamepadAxisMove(e);
 
   if (Math.abs(e.value) >= gscroll.AXIS_THRESHOLD) {
