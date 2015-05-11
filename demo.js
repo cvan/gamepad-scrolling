@@ -35,6 +35,7 @@ exports.addEventListener('gamepadbuttondown', function (e) {
   console.log('Gamepad button down at index %d: %s. Button: %d.',
     e.gamepad.index, e.gamepad.id, e.button);
 
+  gcursor.onGamepadAxisMove(e);
   gnav.onGamepadButtonDown(e);
 });
 
