@@ -35,7 +35,8 @@ var gamepads = new window.Gamepads({
       scrollX: 0,
       scrollY: 1,
       back: 9,
-      forward: 10,
+      forward: 8,
+      vendor: 10,
       zoomIn: 5,
       zoomOut: 1
     },
@@ -46,6 +47,7 @@ var gamepads = new window.Gamepads({
       scrollY: 2,
       back: 8,
       forward: 9,
+      vendor: -1,
       zoomIn: 7,
       zoomOut: 6
     },
@@ -56,8 +58,18 @@ var gamepads = new window.Gamepads({
       scrollY: 2,
       back: 6,
       forward: 7,
+      vendor: -1,
       zoomIn: 9,
       zoomOut: 8
+    }
+  },
+  keyEvents: {
+    vendor: {
+      detail: {
+        charCode: 0,
+        key: 'Escape',
+        keyCode: 27
+      }
     }
   }
 });
@@ -115,8 +127,27 @@ if (gamepads.gamepadsSupported) {
     exports.addEventListener('gamepadbuttonup', function (e) {
       console.log('Gamepad button up at index %d: %s. Button: %d.',
         e.gamepad.index, e.gamepad.id, e.button);
+      gnav.onGamepadButtonUp(e);
     });
   }
+
+  if (gamepads.keyEventsEnabled) {
+    exports.addEventListener('keydown', function (e) {
+      console.log('Keydown event from gamepad button down at index %d: %s. Button: %d. Key: %s. Key code: %d.',
+        e.gamepad.index, e.gamepad.id, e.button, e.key || '?', e.keyCode);
+    });
+
+    exports.addEventListener('keypress', function (e) {
+      console.log('Keypress event from gamepad button down at index %d: %s. Button: %d. Key: %s. Key code: %d.',
+        e.gamepad.index, e.gamepad.id, e.button, e.key || '?', e.keyCode);
+    });
+
+    exports.addEventListener('keyup', function (e) {
+      console.log('Keyup event from gamepad button down at index %d: %s. Button: %d. Key: %s. Key code: %d.',
+        e.gamepad.index, e.gamepad.id, e.button, e.key || '?', e.keyCode);
+    });
+  }
+
 
   // At the time of this writing, Firefox is the only browser that correctly
   // fires the `gamepadconnected` event. For the other browsers
