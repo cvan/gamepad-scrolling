@@ -21,9 +21,9 @@ if (!raf) {
   throw 'requestAnimationFrame is required!';
 }
 
-var caf = window.cancelRequestAnimationFrame ||
-  window.mozCancelRequestAnimationFrame ||
-  window.webkitCancelRequestAnimationFrame;
+var caf = window.cancelAnimationFrame ||
+  window.mozCancelAnimationFrame ||
+  window.webkitCancelAnimationFrame;
 
 
 var gamepads = new window.Gamepads({
